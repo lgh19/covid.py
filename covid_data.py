@@ -165,7 +165,7 @@ class CovidData:
     def writeToFile(self):
         print
         self.ltcfdf.columns
-        userName = raw_input("csv file name (ish): ")
+        userName = raw_input("csv file name: ")
         userName = str(userName)
         b = userName + "_LTCF_Covid_Data.csv"
         b = str(b)
