@@ -1,3 +1,9 @@
+
+#example of how to run code:
+# a = CovidData('DOH_PASDA.csv', 'COVID_DOH1.csv','Week_5_FPP.csv')
+#first file is PASDA, second is DOH covid data, third is FPP data
+#the output of the code is one file with these combined
+
 import pandas as pd
 from fuzzywuzzy import fuzz
 
