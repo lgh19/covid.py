@@ -1,35 +1,36 @@
+import pandas as pd
+from fuzzywuzzy import fuzz
+
+
 class CovidData:
     allLTCFData = ""
     dohfile = ""
     dhsfile1 = ''
     dhsfile2 = ''
     dhsfile3 = ''
-    fppfiel = ''
+    fppfile = ''
     global ltcfdf 
     global dohdf
-    global dhsdf1
-    global dhsdf2
-    global dhsdf3
     global fppdf
     global dohColumnName
     global dhs1ColumnName
 
-    def __init__(self, allLTCFData, dohfilename):
+    def __init__(self, allLTCFData, dohfilename, fppfile):
         self.ltcfdf = pd.DataFrame()
         self.allLTCFData = allLTCFData
         self.ltcfdf = pd.read_csv(allLTCFData)
-        
         self.dohdf = pd.read_csv(dohfilename)
-      #  self.dhsdf1 = pd.read_csv(dhsfile1)
-      #  self.dhsdf2 = pd.read_csv(dhsfile2)
-      #  self.dhsdf3 = pd.read_csv(dhsfile3)
-      #  self.fppdf = pd.read_csv(fppfile)
-        userDate = raw_input("When was DOH data last updated: (day/month/year) : ")
-        userDate = str(userDate)
-        self.dohColumnName = "_DOH_last_updated_" + userDate
+        self.fppdf = pd.read_csv(fppfile)
         self.addDOHData()
         
     def addDOHData(self):
+        print
+        print "Adding DOH Covid Data"
+        print
+        userDate = raw_input("When was DOH data last updated (month/day/year) : ")
+        userDate = str(userDate)
+        self.dohColumnName = "_DOH_last_updated_" + userDate
+        
         def isNaN(string):
             return string != string
 
@@ -42,8 +43,6 @@ class CovidData:
         self.ltcfdf['Resident_Deaths_to_Display'] = ''
         self.ltcfdf['Staff_Cases_to_Display']= ''
         
-        i = 0
-
         for index, row in self.ltcfdf.iterrows():
             tempfacid = row.FACILITY_I
             tempbeds = ''
@@ -72,6 +71,7 @@ class CovidData:
                     self.ltcfdf.loc[self.ltcfdf['FACILITY_I'] ==tempfacid, 'Staff_Cases_to_Display'] = tempstaff
 
                 
+                
         resCaseColumnName = 'Resident_Cases_to_Display' + self.dohColumnName
         resDeathsColumnName = 'Resident_Deaths_to_Display' + self.dohColumnName
         staffColumnName = 'Staff_Cases_to_Display' + self.dohColumnName
@@ -83,9 +83,87 @@ class CovidData:
         self.ltcfdf.rename(columns={'ALL_BEDS': bedColName}, inplace=True)
         self.ltcfdf.rename(columns={'CURRENT_CENSUS': censusColName}, inplace=True)
         self.ltcfdf = self.ltcfdf
+        print "Done Adding DOH Covid Data"
+        print
+        self.addFPPData()
+        
+    def addFPPData(self):
+        self.ltcfdf['First Clinic'] = ''
+        self.ltcfdf['First Clinic'] = self.ltcfdf["First Clinic"].astype(str)
+        self.ltcfdf['2nd Clinic'] = ''
+        self.ltcfdf['2nd Clinic'] = self.ltcfdf["2nd Clinic"].astype(str)
+        self.ltcfdf['3rd Clinic'] = ''
+        self.ltcfdf['3rd Clinic'] = self.ltcfdf["3rd Clinic"].astype(str)
+        self.ltcfdf['4th Clinic'] = ''
+        self.ltcfdf['4th Clinic'] = self.ltcfdf["4th Clinic"].astype(str)
+        self.ltcfdf['5th Clinic'] = ''
+        self.ltcfdf['5th Clinic'] = self.ltcfdf["5th Clinic"].astype(str)
+        self.ltcfdf['6th Clinic'] = ''
+        self.ltcfdf['6th Clinic'] = self.ltcfdf["6th Clinic"].astype(str)
+        print "Adding FPP Data"
+        print
+        userDateFPP = raw_input("FPP Data is from week of (month/day/year) : ")
+        userDateFPP = str(userDateFPP)
+        FPPColName = "_FPP_Data_Week_of_" + userDateFPP
+        print 
+        for index, row in self.fppdf.iterrows():
+            tempStr = (self.fppdf.at[index, 'Facility Name'])
+            tempStr = str(tempStr)
+            tempfacility = self.fppdf.at[index, 'Facility Name']
+            tempaddress = self.fppdf.at[index, 'Address']
+            temptype = self.fppdf.at[index, 'Type']
+            temppharm = self.fppdf.at[index, 'Pharmacy']
+            tempfirstc = self.fppdf.at[index, 'First Clinic']
+            tempsecondc = self.fppdf.at[index, '2nd Clinic']
+            tempthirdc = self.fppdf.at[index, '3rd Clinic']
+            tempfourthc = self.fppdf.at[index, '4th Clinic']
+            tempfifthc = self.fppdf.at[index, '5th Clinic']
+            tempsixthc = self.fppdf.at[index, '6th Clinic']
+
+            for index, row in self.ltcfdf.iterrows():
+                Str1 = (self.ltcfdf.at[index, 'FACILITY_N'])
+                Str1 = str(Str1)
+                ratio = fuzz.ratio(Str1.lower(), tempStr.lower())
+                if (85 < ratio < 90):
+                    self.ltcfdf.at[index, 'flag'] = True
+                    break
+                elif (ratio >= 90):
+                    self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, 'Facility'] = tempfacility
+                    self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, 'Pharmacy'] = temppharm
+                    self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, 'Type'] = temptype
+                    self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, 'First Clinic'] = tempfirstc
+                    self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, '2nd Clinic'] = tempsecondc
+                    self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, '3rd Clinic'] = tempthirdc
+                    self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, '4th Clinic'] = tempfourthc
+                    self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, '5th Clinic'] = tempfifthc
+                    self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, '6th Clinic'] = tempsixthc
+                    break
+                    
+        facColName = 'Facility' + FPPColName
+        self.ltcfdf.rename(columns={'Facility': facColName}, inplace=True)
+        pharmColName = 'Pharmacy' + FPPColName
+        self.ltcfdf.rename(columns={'Pharmacy': pharmColName}, inplace=True)
+        typeColName = 'Type' + FPPColName
+        self.ltcfdf.rename(columns={'Type': typeColName}, inplace=True)
+        fcColName = 'First Clinic' + FPPColName
+        self.ltcfdf.rename(columns={'First Clinic': fcColName}, inplace=True)
+        scColName = '2nd Clinic' + FPPColName
+        self.ltcfdf.rename(columns={'2nd Clinic': scColName}, inplace=True)
+        tcColName = '3rd Clinic' + FPPColName
+        self.ltcfdf.rename(columns={'Third Clinic': tcColName}, inplace=True)
+        fcColName = '4th Clinic' + FPPColName
+        self.ltcfdf.rename(columns={'4th Clinic': fcColName}, inplace=True)
+        ftcColName = '5th Clinic' + FPPColName
+        self.ltcfdf.rename(columns={'5th Clinic': ftcColName}, inplace=True)
+        scColName = '6th Clinic' + FPPColName
+        self.ltcfdf.rename(columns={'6th Clinic': scColName}, inplace=True)
+        
+        self.ltcfdf = self.ltcfdf
+        print "Done Adding FPP Data"      
         self.writeToFile()
         
     def writeToFile(self):
+        print
         self.ltcfdf.columns
         userName = raw_input("csv file name (ish): ")
         userName = str(userName)
@@ -95,4 +173,3 @@ class CovidData:
         self.ltcfdf.to_csv(b)
         print("output file: "),
         print(b)
-
