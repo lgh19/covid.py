@@ -5,15 +5,11 @@ from fuzzywuzzy import fuzz
 class CovidData:
     allLTCFData = ""
     dohfile = ""
-    dhsfile1 = ''
-    dhsfile2 = ''
-    dhsfile3 = ''
     fppfile = ''
     global ltcfdf 
     global dohdf
     global fppdf
     global dohColumnName
-    global dhs1ColumnName
 
     def __init__(self, allLTCFData, dohfilename, fppfile):
         self.ltcfdf = pd.DataFrame()
@@ -55,13 +51,9 @@ class CovidData:
                     pass
                 else:
                     tempbeds = row.ALL_BEDS
-                 #   print(tempbeds)
                     tempcensus = row.CURRENT_CENSUS
-                  #  print(tempcensus)
                     tempres = row.Resident_Cases_to_Display
-                  #  print(tempres)
                     tempresdeath = row.Resident_Deaths_to_Display
-                  #  print(tempresdeath)
                     tempstaff = row.Staff_Cases_to_Display
 
                     self.ltcfdf.loc[self.ltcfdf['FACILITY_I'] ==tempfacid, 'ALL_BEDS']= tempbeds
@@ -125,7 +117,7 @@ class CovidData:
                 Str1 = str(Str1)
                 ratio = fuzz.ratio(Str1.lower(), tempStr.lower())
                 if (85 < ratio < 90):
-                    self.ltcfdf.at[index, 'flag'] = True
+                    self.ltcfdf.at[index, 'flag_FPP'] = True
                     break
                 elif (ratio >= 90):
                     self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, 'Facility'] = tempfacility
