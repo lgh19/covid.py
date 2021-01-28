@@ -85,4 +85,42 @@ class CovidData:
     #then do for fpp data
     #& new date column for this
     
+    for index, row in df.iterrows():
+    tempStr = (df.at[index, 'Facility'])
+    tempStr = str(tempStr)
+    tempfacility = df.at[index, 'Facility']
+    tempfirstc = df.at[index, 'First_Clinic']
+    tempsecondc = df.at[index, 'Second_Clinic']
+    tempthirdc = df.at[index, 'Third_Clinic']
+    tempfourthc = df.at[index, 'Fourth_Clinic']
+    tempaddress = df.at[index, 'Address']
+    userWeek = raw_input("Data for week of: ")
+    userWeek = str(userWeek)
+    for index, row in df2.iterrows():
+        Str1 = (df2.at[index, 'FACILITY_N'])
+        Str1 = str(Str1)
+        ratio = fuzz.ratio(Str1.lower(), tempStr.lower())
+        if (85 < ratio < 90):
+            df2.at[index, 'flag'] = True
+            print("DO MANUALLY")
+            print(ratio)
+            print(tempStr)
+            print(Str1)
+            print
+            break
+        elif (ratio >= 90):
+            print("found match | ratio: "),
+            print(ratio)
+            print(tempStr)
+            print(Str1)
+            df2.at[index, 'Facility'] = tempfacility
+            df2.at[index,'First_Clinic'] = tempfirstc
+            df2.at[index,'Second_Clinic'] = tempsecondc
+            df2.at[index, 'Third_Clinic'] = tempthirdc
+            df2.at[index,'Fourth_Clinic'] = tempfourthc
+            df2.at[index,'Address'] = tempcounty
+            df2.at[index,'Week_Of'] = userWeek
+            print
+            break
+
     
