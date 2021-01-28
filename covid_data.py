@@ -31,10 +31,10 @@ for index, row in df2.iterrows():
     #have user input x date at the beginning and add it to _DOH_as_of_ **
     
     
-    Then do one for dhs data
-    & create new date column for this
+    #Then do one for dhs data
+    #& create new date column for this
     
-    then do for fpp data
-    & new date column for this
+    #then do for fpp data
+    #& new date column for this
     
     
