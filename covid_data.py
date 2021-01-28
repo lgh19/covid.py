@@ -11,6 +11,8 @@ class CovidData:
     global dhsdf2
     global dhsdf3
     global fppdf
+    global dohColumnName
+    global dhs1ColumnName
 
     def __init__(self, allLTCFData, dohfilename, dhsfile1, dhsfile2, dhsfile3, fppfile):
         self.ltcfdf = pd.DataFrame(data=None, columns=None)
@@ -24,7 +26,10 @@ class CovidData:
         self.dhsdf2 = pd.read_csv(dhsfile2)
         self.dhsdf3 = pd.read_csv(dhsfile3)
         self.fppdf = pd.read_csv(fppfile)
-
+        userDate = raw_input("When was DOH data last updated: (day/month/year) : ")
+        userDate = str(userDate)
+        self.dohColumnName = "_DOH_last_updated_" + userDate
+        
     def addDOHData(self):
         def isNaN(string):
             return string != string
@@ -60,9 +65,19 @@ class CovidData:
             df2.set_value(index, 'Resident_Deaths_to_Display', tempresdeath)
             df2.set_value(index, 'Staff_Cases_to_Display', tempstaff)
             
-    #after this loop, rename columns to have _doh_as_of_x at the end
-    #have user input x date at the beginning and add it to _DOH_as_of_ **
-    
+            resCaseColumnName = 'Resident_Cases_to_Display'+ self.dohColumnName
+            resDeathsColumnName = 'Resident_Deaths_to_Display' + self.dohColumnName
+            staffColumnName = 'Staff_Cases_to_Display' + self.dohColumnName
+            bedColName = 'ALL_BEDS' + self.dohColumnName
+            censusColName = 'CURRENT_CENSUS' + self.dohColumnName
+            self.ltcfdf.rename(columns={'Resident_Cases_to_Display': resCaseColumnName }, inplace=True)
+            self.ltcf.rename(columns={'Resident_Deaths_to_Display':resDeathsColumnName}, inplace=True)
+            self.ltcf.rename(columns={'Staff_Cases_to_Display': staffColumnName}, inplace=True)
+            self.ltcf.rename(columns={'ALL_BEDS': bedColName}, inplace=True)
+            self.ltcf.rename(columns={'CURRENT_CENSUS': censusColName}, inplace=True)
+
+
+            
     
     #Then do one for dhs data
     #& create new date column for this
