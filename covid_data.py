@@ -3,7 +3,7 @@ df2 = doh data
 # to do:
 make a class where you pass in the doh, dhs, and fpp data
 set the "doh_as_of_x_x_x" date as a variable
-
+#rename column names change spaces to underlines
 
 for index, row in df2.iterrows():
     tempfacid = row.FACID
