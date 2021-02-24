@@ -6,9 +6,9 @@
 
 from bs4 import BeautifulSoup
 import requests
+from openpyxl import load_workbook
 import pandas as pd
 from fuzzywuzzy import fuzz
-from openpyxl import load_workbook
 import re
 
 class CovidData:
@@ -58,11 +58,16 @@ class CovidData:
         for link in soup.find_all('a'):
             url = link.get('href', 'No Link Found')
             if re.search('xlsx', url) is not None:
-                fpp_dates.append(link.next_sibling)
+                title = link.get('title')
+                fpp_dates.append(title)
                 doc_urls.append(url)
 
         fullurl = "https://www.health.pa.gov" + doc_urls[5]
-        self.fpp_last_updated = fpp_dates[5]
+
+        fpp_date = fpp_dates[5]
+        fpp_date = fpp_date.split('- ')
+        fpp_date = fpp_date[1]
+        self.fpp_last_updated = fpp_date
         r = requests.get(fullurl)
         open('FPP_Data.xlsx', 'w').write(r.content)
 
@@ -74,11 +79,12 @@ class CovidData:
         ws2 = wb2['Sheet1']
 
         df = pd.DataFrame(ws.values)
-        df.rename(columns={0: u"Facility Name", 1: u'Address', 2: u"City", 3: u"County", 4: u"Zip Code", 5: u'Contact',
-                           6: u'Phone', 7: u'Group', 8: u'Phase', 9: u'Program', 10: u'Number_Beds', 11: u"clinicdt1",
-                           12: u"clinicdt2", 13: u"clinicdt3", 14: u"clinicdt4", 15: u"clinicdt5", 16: u"clinicdt6",
-                           17: u"clinicdt7", 18: u"clinicdt8", 19: u"clinicdt9", 20: u"clinicdt10"}, inplace=True)
 
+        df.rename(columns={0: u"Facility Name", 1: u'Address', 2: u"City", 3: u"County", 4: u"Zip Code", 5: u'Facility Type', 6: u"clinicdt1",
+                           7: u"clinicdt2", 8: u"clinicdt3", 9: u"clinicdt4", 10: u"clinicdt5", 11: u"clinicdt6",
+                           12: u"clinicdt7", 13: u"clinicdt8", 14: u"clinicdt9", 15: u"clinicdt10"}, inplace=True)
+
+        
         df2 = pd.DataFrame(ws2.values)
 
         df2.rename(columns={0: u"FACID", 1: u"NAME", 2: u"CITY", 3: u"COUNTY", 4: u"ALL_BEDS", 5: u"CURRENT_CENSUS",
@@ -87,14 +93,13 @@ class CovidData:
 
         df = df.iloc[1:]
         df2 = df2.iloc[1:]
+        
 
         df.to_csv("FPP_CSV1.csv", encoding='utf-8')
 
         df2.to_csv("DOH_CSV1.csv", encoding='utf-8')
-
-        self.fppdf = pd.read_csv("FPP_CSV1.csv")
-
-        self.dohdf = pd.read_csv("DOH_CSV1.csv")
+        self.fppdf = pd.read_csv('FPP_CSV1.csv')
+        self.dohdf = pd.read_csv('DOH_CSV1.csv')
 
         self.addDOHData()
         
@@ -180,8 +185,7 @@ class CovidData:
             tempStr = str(tempStr)
             tempfacility = self.fppdf.at[index, 'Facility Name']
             tempaddress = self.fppdf.at[index, 'Address']
-        #    temptype = self.fppdf.at[index, 'Facility Type']
-            tempphase = self.fppdf.at[index, 'Phase']
+            temptype = self.fppdf.at[index, 'Facility Type']
             tempfirstc = self.fppdf.at[index, 'clinicdt1']
             tempsecondc = self.fppdf.at[index, 'clinicdt2']
             tempthirdc = self.fppdf.at[index, 'clinicdt3']
@@ -202,7 +206,6 @@ class CovidData:
                     break
                 elif (ratio >= 90):
                     self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, 'Facility'] = tempfacility
-                    self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, 'Phase'] = tempphase
                     self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, 'clinicdt1'] = tempfirstc
                     self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, 'clinicdt2'] = tempsecondc
                     self.ltcfdf.loc[self.ltcfdf['FACILITY_N'] == Str1, 'clinicdt3'] = tempthirdc
@@ -224,7 +227,6 @@ class CovidData:
         print
         b = "COVID19_Vaccine_Data_LTCF.csv"
         b = str(b)
-        self.ltcfdf.to_csv(b)
+        self.ltcfdf.to_csv(b, encoding = 'utf-8')
         print("output file: "),
         print(b)
-        
