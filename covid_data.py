@@ -39,8 +39,6 @@ class CovidData:
             if re.search('xlsx', url) is not None:
                 doh_dates.append(link.next_sibling)
                 doc_urls.append(url)
-        # print doc_urls
-        # print doh_dates
         assert len(doc_urls) == 4  # Verify that the web site only lists four XSLX files.
         self.doh_last_updated = doh_dates[0]
         fullurl = "https://www.health.pa.gov" + doc_urls[0]
@@ -51,36 +49,17 @@ class CovidData:
 
         r = requests.get("https://data.pa.gov/api/views/iwiy-rwzp/rows.csv?accessType=DOWNLOAD&api_foundry=true")
         open('FPP_Data.csv', 'wb').write(r.content)
-        
-    #    fullSite = requests.get("https://data.pa.gov/Health/COVID-19-Federal-Pharmacy-Partners-Long-Term-Care-/iwiy-rwzp")
-    #    soup = BeautifulSoup(fullSite.text, 'html.parser')
-     
-        
-      #  wb = load_workbook('FPP_Data.xlsx')
+
         wb2 = load_workbook('DOH_Data.xlsx')
-     #   print(wb.sheetnames)
-     #   ws = wb[wb.sheetnames[0]]
-
         ws2 = wb2['Sheet1']
-
-     #   df = pd.DataFrame(ws.values)
-
-     #   df.rename(
-      #      columns={0: u"Facility Name", 1: u'Address', 2: u"City", 3: u"County", 4: u"Zip Code", 5: u'Facility Type',
-     #                6: u"clinicdt1",
-     #                7: u"clinicdt2", 8: u"clinicdt3", 9: u"clinicdt4", 10: u"clinicdt5", 11: u"clinicdt6",
-      #               12: u"clinicdt7", 13: u"clinicdt8", 14: u"clinicdt9", 15: u"clinicdt10"}, inplace=True)
-
+        
         df2 = pd.DataFrame(ws2.values)
 
         df2.rename(columns={0: u"FACID", 1: u"NAME", 2: u"CITY", 3: u"COUNTY", 4: u"ALL_BEDS", 5: u"CURRENT_CENSUS",
                             6: u"Resident Cases to Display",
                             7: u"Resident Deaths to Display", 8: u"Staff Cases to Display"}, inplace=True)
 
-     #   df = df.iloc[1:]
         df2 = df2.iloc[1:]
-
-      #  df.to_csv("FPP_CSV1.csv", encoding='utf-8')
 
         df2.to_csv("DOH_CSV1.csv", encoding='utf-8')
         self.fppdf = pd.read_csv('FPP_Data.csv')
